@@ -3,6 +3,7 @@ package com.smoothstack.jan2020.librarymanagementsystem.DatabaseEngine;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -67,7 +68,7 @@ public class IndexTable implements Closeable {
     }
 
     public long nextId() {
-       long maxId = (table.keySet().size()>0)?Collections.max(table.keySet()):0;
+       long maxId = (table.keySet().size()>0)?table.keySet().stream().max(Comparator.comparingLong(Long::longValue)).orElse(0L):0;
 
        if (maxId < Long.MAX_VALUE)
            return maxId+1;
