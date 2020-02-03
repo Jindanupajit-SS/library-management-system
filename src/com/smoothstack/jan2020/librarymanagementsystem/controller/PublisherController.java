@@ -1,7 +1,9 @@
 package com.smoothstack.jan2020.librarymanagementsystem.controller;
 
+import com.smoothstack.jan2020.librarymanagementsystem.Repository.BookRepository;
 import com.smoothstack.jan2020.librarymanagementsystem.Repository.PublisherRepository;
 import com.smoothstack.jan2020.librarymanagementsystem.Repository.Repository;
+import com.smoothstack.jan2020.librarymanagementsystem.model.Book;
 import com.smoothstack.jan2020.librarymanagementsystem.model.Publisher;
 import com.smoothstack.jan2020.librarymanagementsystem.templates.Menu;
 import com.smoothstack.jan2020.librarymanagementsystem.templates.MenuItem;
@@ -12,6 +14,7 @@ import java.util.function.Predicate;
 public class PublisherController implements Controller {
 
     PublisherRepository publisherRepository = (PublisherRepository) Repository.getRepository(Publisher.class);
+    BookRepository bookRepository = (BookRepository) Repository.getRepository(Book.class);
 
     public String requestMapping(String endPoint, Properties model, Properties requestParam) {
         try {
@@ -223,9 +226,17 @@ public class PublisherController implements Controller {
 
                 try {
                     long id = Long.parseLong(publisherId.get());
+                    Publisher publisher = publisherRepository.get(id);
+                    StringBuilder sb = new StringBuilder();
+                    bookRepository.find(book->book.getPublisher().getLongId()==publisher.getLongId())
+                            .forEachRemaining(
+                                    book-> {
+                                        sb.append(String.format("Book id=%d, name=%s was deleted!\n",book.getLongId(), book.getName()));
+                                        bookRepository.delete(book.getLongId()); } );
 
-                    Publisher publisher = publisherRepository.delete(id);
-                    model.setProperty("info", publisher.getName() + " was deleted!");
+                    publisherRepository.delete(id);
+                    sb.append(publisher.getName()).append(" was deleted!\n");
+                    model.setProperty("info", sb.toString());
                     model.setProperty("redirectEndPoint", "publisherMenu");
                     return "redirect";
                 } catch (NumberFormatException e) {
